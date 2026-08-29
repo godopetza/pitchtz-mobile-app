@@ -43,13 +43,15 @@ this contract is planned or aspirational.
 
 ## Feature map
 
+- **Match Center:** group fixtures by live, favorites and league; filter the cached seven-day window locally, and poll every 60 seconds only while a match is live.
+
 | Feature | Endpoints | Web reference |
 | --- | --- | --- |
 | Discover venues & pitches | `/cities`, `/venues`, `/venues/{id}`, `…/availability`, `…/extras`, `…/reviews` | Home, `/results`, venue pages |
 | Sign in | `/auth/email/*`, `/auth/google/start`, `/auth/me`, `/auth/refresh` | Top-right sign-in |
 | Book & pay | `/bookings`, `…/pay`, `…/split`, `/pay/shares/{id}` | Venue page booking panel |
 | Teams & challenges | `/teams*`, `/me/teams`, `/challenges*` | `/teams` |
-| Match board | `/fixtures` | `/watch-parties` |
+| Match board | `/fixtures`, `/me/favorite-teams` | `/watch-parties#fixtures` |
 | Shop | `/shop/*` | `/shop` |
 | City waitlist & venue leads | `/waitlist`, `/venues/enroll` | Homepage cities section, `/owners` |
 
