@@ -301,10 +301,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginSubtitle => 'Sign in or create an account in seconds.';
 
   @override
-  String get phoneNumberLabel => 'PHONE NUMBER';
+  String get emailLabel => 'EMAIL';
 
   @override
-  String get phoneHint => '754 123 456';
+  String get emailHint => 'you@example.com';
 
   @override
   String get sendCode => 'Send code';
@@ -328,7 +328,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skipBrowse => 'Skip for now — browse pitches';
 
   @override
-  String get enterPhoneFirst => 'Enter your phone number first';
+  String get enterEmailFirst => 'Enter a valid email address first';
+
+  @override
+  String codeSentTo(String email) {
+    return 'We emailed a 6-digit code to $email. It’s valid for 10 minutes.';
+  }
+
+  @override
+  String get changeEmail => 'Use a different email';
 
   @override
   String signedInToast(String name) {
@@ -336,14 +344,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get signedInGoogle => 'Signed in with Google ✓';
-
-  @override
-  String get signedInApple => 'Signed in with Apple ✓';
-
-  @override
-  String get demoAuthNote =>
-      'Demo sign-in — runs on this device until accounts go live on the backend.';
+  String get socialSignInMobileOnly =>
+      'Google & Apple sign-in are available in the mobile app.';
 
   @override
   String get profileTitle => 'Profile';
@@ -365,7 +367,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logOutConfirmMessage =>
-      'You can sign back in anytime with your phone number.';
+      'You can sign back in anytime with your email.';
 
   @override
   String get loggedOutToast => 'You’ve been logged out. Karibu tena!';

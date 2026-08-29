@@ -24,6 +24,9 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
+    // Sliding refresh: trade a token past half-life for a fresh 30-day one.
+    // Fire-and-forget — the repository handles failures internally.
+    unawaited(getIt<AuthRepository>().refreshIfNeeded());
     _timer = Timer(const Duration(milliseconds: 1800), () {
       if (!mounted) return;
       final signedIn = getIt<AuthRepository>().isSignedIn;

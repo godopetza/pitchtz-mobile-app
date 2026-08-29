@@ -241,10 +241,14 @@ class ResultsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(p.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                           fontSize: 14.5, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 2),
                   Text('${p.area} · ★ ${p.ratingLabel}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 12, color: AppColors.muted)),
                   const SizedBox(height: 4),
                   Text('${Formatters.tsh(p.pricePerHour)}/hr',

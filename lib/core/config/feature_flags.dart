@@ -1,21 +1,21 @@
-/// Which product areas are backed by a live backend today.
+/// Which product areas the app has built against the live backend so far.
 ///
-/// Per the mobile handoff, only browsing/discovery is live. Player auth,
-/// booking creation, payments, favorites sync, teams/leagues and the AI
-/// assistant are `planned` (they 404 on the server), so they are gated behind
-/// "coming soon" states until the backend ships them.
+/// Since the Aug 2026 handover the **whole contract is live server-side**
+/// (auth, bookings & payments, teams, fixtures, shop, watch spots). Flags
+/// below no longer track the backend — they track what this app has shipped:
+/// flip one on once its screens talk to the real endpoints.
 class FeatureFlags {
   FeatureFlags._();
 
-  // Live
+  // Built against the live API
   static const bool discovery = true; // cities, venues, availability, reviews
   static const bool waitlist = true; // POST /v1/waitlist
+  static const bool playerAuth = true; // email code + Google/Apple OAuth
 
-  // Planned (backend returns 404 — keep off)
-  static const bool playerAuth = false;
-  static const bool booking = false;
-  static const bool favorites = false;
-  static const bool teams = false;
-  static const bool aiAssistant = false;
-  static const bool profileBookings = false;
+  // Live server-side, app screens not wired yet (kept "coming soon")
+  static const bool booking = false; // POST /bookings + pay/split/deposit
+  static const bool favorites = false; // /me/favorite-teams
+  static const bool teams = false; // /teams*, /challenges*
+  static const bool aiAssistant = false; // no backend endpoint yet
+  static const bool profileBookings = false; // GET /bookings
 }

@@ -127,14 +127,24 @@ class TonightCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Expanded(child: Text(pitch.name, style: AppText.cardTitle)),
+                      Expanded(
+                        child: Text(pitch.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.cardTitle),
+                      ),
                       Text('★ ${pitch.ratingLabel}',
                           style: const TextStyle(
                               fontSize: 12.5, fontWeight: FontWeight.w700)),
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text('${pitch.area} · ${pitch.format}', style: AppText.small),
+                  // Live areas can be long ("2 Winds Paddle Sports - Zanzibar")
+                  // and this card has a fixed height — never let it wrap.
+                  Text('${pitch.area} · ${pitch.format}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.small),
                   const SizedBox(height: 9),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -225,15 +235,31 @@ class PitchListRow extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 3),
-                  Text(meta, style: AppText.tiny),
+                  Text(meta,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.tiny),
                   const SizedBox(height: 1),
-                  Text('${pitch.format} · ${pitch.surface}', style: AppText.tiny),
+                  Text('${pitch.format} · ${pitch.surface}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.tiny),
                   const SizedBox(height: 5),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _price(pitch.pricePerHour, prefix: 'From '),
-                      if (pitch.verified) const TintBadge(text: '✓ Verified'),
+                      // Shrinks the price rather than overflowing when a
+                      // six-figure amount meets the verified badge.
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: _price(pitch.pricePerHour, prefix: 'From '),
+                        ),
+                      ),
+                      if (pitch.verified) ...[
+                        const SizedBox(width: 6),
+                        const TintBadge(text: '✓ Verified'),
+                      ],
                     ],
                   ),
                 ],
@@ -327,9 +353,13 @@ class ResultCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(sub,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 13, color: AppColors.muted)),
                   const SizedBox(height: 1),
                   Text('${pitch.format} · ${pitch.surface}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppText.small),
                   const SizedBox(height: 8),
                   _price(pitch.pricePerHour, prefix: 'From ', big: true),

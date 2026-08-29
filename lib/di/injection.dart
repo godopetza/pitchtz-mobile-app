@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/config/locale_controller.dart';
 import '../core/network/api_client.dart';
+import '../core/network/token_store.dart';
 import '../core/utils/toast_controller.dart';
 import '../data/repositories/ai_repository_impl.dart';
 import '../data/repositories/auth_repository_impl.dart';
@@ -21,7 +22,6 @@ import '../domain/repositories/payment_repository.dart';
 import '../domain/repositories/pitch_repository.dart';
 import '../domain/repositories/teams_repository.dart';
 import '../domain/usecases/booking_calculator.dart';
-import '../domain/usecases/create_booking.dart';
 import '../domain/usecases/search_pitches_with_ai.dart';
 import '../domain/usecases/toggle_favorite.dart';
 import '../features/auth/viewmodel/login_viewmodel.dart';
@@ -47,7 +47,8 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<SharedPreferences>(prefs);
   getIt.registerLazySingleton<ToastController>(() => ToastController());
   getIt.registerLazySingleton<LocaleController>(() => LocaleController(prefs));
-  getIt.registerLazySingleton<ApiClient>(() => ApiClient());
+  getIt.registerLazySingleton<TokenStore>(() => TokenStore(prefs));
+  getIt.registerLazySingleton<ApiClient>(() => ApiClient(tokens: getIt()));
 
   // ---- Repositories (data layer, singletons) ----
   // Live (API-backed):
@@ -55,20 +56,21 @@ Future<void> configureDependencies() async {
       () => PitchRepositoryImpl(getIt()));
   getIt.registerLazySingleton<CityRepository>(
       () => CityRepositoryImpl(getIt()));
-  // Planned/gated (kept for the coming-soon flows & booking demo):
+  getIt.registerLazySingleton<BookingRepository>(
+      () => BookingRepositoryImpl(getIt()));
+  // Kept for coming-soon flows:
   getIt.registerLazySingleton<FavoritesRepository>(
       () => FavoritesRepositoryImpl());
-  getIt.registerLazySingleton<BookingRepository>(() => BookingRepositoryImpl());
-  getIt.registerLazySingleton<TeamsRepository>(() => const TeamsRepositoryImpl());
+  getIt.registerLazySingleton<TeamsRepository>(() => TeamsRepositoryImpl(getIt()));
   getIt.registerLazySingleton<PaymentRepository>(
-      () => const PaymentRepositoryImpl());
-  // Local device session (backend player auth is still `planned`).
-  getIt.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(prefs));
+      () => PaymentRepositoryImpl());
+  // Live player auth: email code + Google/Apple OAuth, 30-day bearer JWT.
+  getIt.registerLazySingleton<AuthRepository>(
+      () => AuthRepositoryImpl(prefs, getIt(), getIt()));
   getIt.registerLazySingleton<AiRepository>(() => const AiRepositoryImpl());
 
   // ---- Use cases (domain layer) ----
   getIt.registerLazySingleton(() => const BookingCalculator());
-  getIt.registerLazySingleton(() => CreateBooking(getIt()));
   getIt.registerLazySingleton(() => ToggleFavorite(getIt()));
   getIt.registerLazySingleton(() => SearchPitchesWithAi(getIt()));
 
@@ -81,7 +83,7 @@ Future<void> configureDependencies() async {
   getIt.registerFactory(() => ResultsViewModel(getIt()));
   getIt.registerFactory(() => DetailViewModel(getIt(), getIt()));
   getIt.registerLazySingleton(
-      () => BookingFlowViewModel(getIt(), getIt(), getIt(), getIt()));
+      () => BookingFlowViewModel(getIt(), getIt(), getIt()));
   getIt.registerFactory(() => BookingsViewModel(getIt()));
-  getIt.registerFactory(() => TeamsViewModel(getIt(), getIt()));
+  getIt.registerFactory(() => TeamsViewModel(getIt(), getIt(), getIt()));
 }

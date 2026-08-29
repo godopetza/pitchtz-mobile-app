@@ -1,6 +1,5 @@
 import '../../domain/entities/booking.dart';
 import '../../domain/entities/payment_method.dart';
-import '../../domain/entities/team.dart';
 
 /// Remaining local/mock content for the areas that are **not** backed by the
 /// live API yet (booking flow extras, teams, static filter options). Discovery
@@ -90,38 +89,6 @@ class MockData {
   static const List<Booking> pastBookings = [
     Booking(venue: 'Mikocheni Arena', date: 'Tue, 18 Aug', time: '8:00 PM – 9:00 PM', code: '', priceLabel: 'TSh 75,000', status: BookingStatus.completed),
     Booking(venue: 'GameHub Kinondoni', date: 'Sat, 8 Aug', time: '6:00 PM – 7:00 PM', code: '', priceLabel: 'TSh 70,000', status: BookingStatus.completed),
-  ];
-
-  // --- Teams (gated / coming soon) ---
-  static const MyTeam myTeam = MyTeam(
-    name: 'Mikocheni Warriors',
-    league: 'Kinondoni Sunday League',
-    rank: '2nd of 10',
-    stats: [
-      TeamStat('Played', '8'),
-      TeamStat('W', '5'),
-      TeamStat('D', '1'),
-      TeamStat('L', '2'),
-      TeamStat('Pts', '16'),
-    ],
-  );
-
-  static const List<StandingRow> standings = [
-    StandingRow(position: '1', team: 'Sinza United', points: '18'),
-    StandingRow(position: '2', team: 'Mikocheni Warriors', points: '16', highlighted: true),
-    StandingRow(position: '3', team: 'Masaki FC', points: '14'),
-  ];
-
-  static const List<Challenge> challenges = [
-    Challenge(id: 1, team: 'Upanga Tigers', meta: '5-a-side · Intermediate', when: 'Sat 6:00 PM · Mikocheni Arena'),
-    Challenge(id: 2, team: 'Kigamboni Ballers', meta: '7-a-side · Casual', when: 'Sun 4:00 PM · Kigamboni Football Hub'),
-    Challenge(id: 3, team: 'Oyster Bay Old Boys', meta: '5-a-side · Competitive', when: 'Tue 8:00 PM · Oyster Bay Five'),
-  ];
-
-  static const List<JoinableTeam> joinable = [
-    JoinableTeam(id: 'j1', tag: 'SU', team: 'Sinza United', needs: 'Needs 2 players', meta: '7-a-side · Trains Tue & Thu · Sinza'),
-    JoinableTeam(id: 'j2', tag: 'MF', team: 'Masaki FC', needs: 'Needs a keeper', meta: '5-a-side · Plays Sat mornings · Masaki'),
-    JoinableTeam(id: 'j3', tag: 'KB', team: 'Kigamboni Ballers', needs: 'Open tryouts', meta: '11-a-side · Sun 4 PM · Kigamboni'),
   ];
 
   static const List<String> profileRows = [

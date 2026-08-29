@@ -303,10 +303,10 @@ class AppLocalizationsSw extends AppLocalizations {
   String get loginSubtitle => 'Ingia au fungua akaunti kwa sekunde chache.';
 
   @override
-  String get phoneNumberLabel => 'NAMBA YA SIMU';
+  String get emailLabel => 'BARUA PEPE';
 
   @override
-  String get phoneHint => '754 123 456';
+  String get emailHint => 'wewe@mfano.com';
 
   @override
   String get sendCode => 'Tuma msimbo';
@@ -330,7 +330,15 @@ class AppLocalizationsSw extends AppLocalizations {
   String get skipBrowse => 'Ruka kwa sasa — vinjari viwanja';
 
   @override
-  String get enterPhoneFirst => 'Weka namba yako ya simu kwanza';
+  String get enterEmailFirst => 'Weka barua pepe sahihi kwanza';
+
+  @override
+  String codeSentTo(String email) {
+    return 'Tumekutumia msimbo wa tarakimu 6 kwa $email. Unafanya kazi kwa dakika 10.';
+  }
+
+  @override
+  String get changeEmail => 'Tumia barua pepe nyingine';
 
   @override
   String signedInToast(String name) {
@@ -338,14 +346,8 @@ class AppLocalizationsSw extends AppLocalizations {
   }
 
   @override
-  String get signedInGoogle => 'Umeingia na Google ✓';
-
-  @override
-  String get signedInApple => 'Umeingia na Apple ✓';
-
-  @override
-  String get demoAuthNote =>
-      'Kuingia kwa majaribio — kunafanya kazi kwenye kifaa hiki hadi akaunti zitakapoanza kazi rasmi.';
+  String get socialSignInMobileOnly =>
+      'Kuingia kwa Google na Apple kunapatikana kwenye programu ya simu.';
 
   @override
   String get profileTitle => 'Wasifu';
@@ -367,7 +369,7 @@ class AppLocalizationsSw extends AppLocalizations {
 
   @override
   String get logOutConfirmMessage =>
-      'Unaweza kuingia tena wakati wowote kwa namba yako ya simu.';
+      'Unaweza kuingia tena wakati wowote kwa barua pepe yako.';
 
   @override
   String get loggedOutToast => 'Umetoka. Karibu tena!';

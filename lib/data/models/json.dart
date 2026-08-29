@@ -79,6 +79,9 @@ class J {
     if (v is String) return DateTime.tryParse(v);
     return null;
   }
+
+  /// Like [date] but the name makes call-sites read clearly for optional dates.
+  static DateTime? dateOrNull(Map m, String key) => date(m, key);
 }
 
 /// Presentation helpers that normalise the API's short codes to display text.

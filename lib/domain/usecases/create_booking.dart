@@ -1,26 +1,24 @@
-import '../entities/booking.dart';
+import '../entities/api_booking.dart';
 import '../repositories/booking_repository.dart';
 
-/// Confirms a booking through the [BookingRepository]. Kept as an explicit
-/// use-case so the payment ViewModel depends on an intention, not a data store.
+/// Creates a booking through the [BookingRepository].
+///
+/// Kept as an explicit use-case so presentation code depends on an intention
+/// rather than a data-store interface.
 class CreateBooking {
   const CreateBooking(this._repository);
 
   final BookingRepository _repository;
 
-  Booking call({
-    required String venue,
-    required String date,
-    required String time,
-    required int total,
-    required int durationMinutes,
+  Future<ApiBooking> call({
+    required String pitchId,
+    required DateTime startsAt,
+    required DateTime endsAt,
   }) {
     return _repository.createBooking(
-      venue: venue,
-      date: date,
-      time: time,
-      total: total,
-      durationMinutes: durationMinutes,
+      pitchId: pitchId,
+      startsAt: startsAt,
+      endsAt: endsAt,
     );
   }
 }

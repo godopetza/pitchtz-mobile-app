@@ -23,9 +23,10 @@ class _ProcessingPageState extends State<ProcessingPage> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(milliseconds: 2200), () {
+    _timer = Timer(const Duration(milliseconds: 2200), () async {
       if (!mounted) return;
-      context.read<BookingFlowViewModel>().confirm();
+      await context.read<BookingFlowViewModel>().confirm();
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, Routes.success);
     });
   }

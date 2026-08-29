@@ -1,86 +1,157 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/network/api_client.dart';
+import '../../core/network/api_exception.dart';
+import '../../core/network/token_store.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../models/json.dart';
 
-/// Local device session persisted in [SharedPreferences].
+/// Real session against the live `/auth/*` endpoints.
 ///
-/// The backend has no player auth yet (`/auth/*` is `planned` → 404), so this
-/// keeps the sign-in/sign-out UX working end-to-end on-device. When the real
-/// endpoints ship, replace the bodies with API calls + JWT storage — the
-/// interface and everything above it stay identical.
+/// The 30-day bearer JWT lives in [TokenStore] (where [ApiClient] picks it up
+/// for every request); the profile is cached in [SharedPreferences] so the app
+/// opens signed-in without waiting on the network.
 class AuthRepositoryImpl extends ChangeNotifier implements AuthRepository {
-  AuthRepositoryImpl(this._prefs) {
-    final name = _prefs.getString(_kName);
-    if (name != null) {
-      _user = UserProfile(
-        name: name,
-        phone: _prefs.getString(_kPhone) ?? '',
-        provider: _prefs.getString(_kProvider) ?? 'phone',
-      );
+  AuthRepositoryImpl(this._prefs, this._api, this._tokens) {
+    final cached = _prefs.getString(_kUser);
+    if (_tokens.hasToken && cached != null) {
+      try {
+        _user = _profileFromJson(
+            (jsonDecode(cached) as Map).cast<String, dynamic>());
+      } catch (_) {
+        _user = null;
+      }
     }
+    // Token gone/expired but a stale profile remains — drop it.
+    if (!_tokens.hasToken && cached != null) _prefs.remove(_kUser);
   }
 
-  static const _kName = 'session_name';
-  static const _kPhone = 'session_phone';
-  static const _kProvider = 'session_provider';
-
-  /// Demo identity used until real accounts exist server-side.
-  static const _demoName = 'Juma Mwakalinga';
+  static const _kUser = 'session_user';
 
   final SharedPreferences _prefs;
+  final ApiClient _api;
+  final TokenStore _tokens;
   UserProfile? _user;
 
   @override
   UserProfile? get currentUser => _user;
 
   @override
-  bool get isSignedIn => _user != null;
+  bool get isSignedIn => _user != null && _tokens.hasToken;
 
   @override
-  List<String> get demoCode => const ['4', '7', '2', '9', '1', '8'];
+  Future<void> sendEmailCode(String email) =>
+      _api.post('/auth/email/start', body: {'email': email});
 
   @override
-  Future<void> sendCode(String phone) =>
-      Future.delayed(const Duration(milliseconds: 400));
-
-  @override
-  Future<UserProfile> verifyCode(
-      {required String phone, required String code}) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    return _open(UserProfile(name: _demoName, phone: phone));
+  Future<UserProfile> verifyEmailCode(
+      {required String email, required String code}) async {
+    final data = await _api.post('/auth/email/verify',
+        body: {'email': email, 'code': code});
+    return _openFromGrant(data);
   }
 
   @override
-  Future<UserProfile> signInWithGoogle() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _open(const UserProfile(
-        name: _demoName, phone: '', provider: 'google'));
+  Future<UserProfile> adoptOAuthToken(String token) async {
+    // The redirect fragment only carries the JWT; its `exp` claim is the
+    // authoritative expiry (fall back to the documented 30 days).
+    final expiresAt =
+        _jwtExpiry(token) ?? DateTime.now().add(TokenStore.tokenLife);
+    await _tokens.save(token, expiresAt);
+    try {
+      final me = await _api.getObject('/auth/me');
+      return await _open(_profileFromJson(me));
+    } catch (_) {
+      await _tokens.clear();
+      rethrow;
+    }
   }
 
   @override
-  Future<UserProfile> signInWithApple() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _open(
-        const UserProfile(name: _demoName, phone: '', provider: 'apple'));
-  }
-
-  Future<UserProfile> _open(UserProfile user) async {
-    _user = user;
-    await _prefs.setString(_kName, user.name);
-    await _prefs.setString(_kPhone, user.phone);
-    await _prefs.setString(_kProvider, user.provider);
-    notifyListeners();
-    return user;
+  Future<void> refreshIfNeeded() async {
+    if (!isSignedIn || !_tokens.isPastHalfLife) return;
+    try {
+      final data = await _api.post('/auth/refresh');
+      await _openFromGrant(data);
+    } on ApiException catch (e) {
+      // 401 = the token no longer refreshes; fall back to signed-out.
+      if (e.statusCode == 401) await signOut();
+      // Network blips: keep the session, try again next launch.
+    }
   }
 
   @override
   Future<void> signOut() async {
     _user = null;
-    await _prefs.remove(_kName);
-    await _prefs.remove(_kPhone);
-    await _prefs.remove(_kProvider);
+    await _tokens.clear();
+    await _prefs.remove(_kUser);
     notifyListeners();
+  }
+
+  // ---- helpers ----
+
+  /// TokenGrant: `{ access_token, token_type, expires_at, user }`.
+  Future<UserProfile> _openFromGrant(dynamic data) async {
+    if (data is! Map<String, dynamic>) {
+      throw ApiException('Unexpected sign-in response.');
+    }
+    final token = J.str(data, 'access_token');
+    if (token.isEmpty) throw ApiException('Sign-in response had no token.');
+    final expiresAt = J.date(data, 'expires_at') ??
+        DateTime.now().add(TokenStore.tokenLife);
+    await _tokens.save(token, expiresAt);
+    final userJson = J.obj(data, 'user') ?? const <String, dynamic>{};
+    return _open(_profileFromJson(userJson));
+  }
+
+  Future<UserProfile> _open(UserProfile user) async {
+    _user = user;
+    await _prefs.setString(
+        _kUser,
+        jsonEncode({
+          'id': user.id,
+          'name': user.name,
+          'email': user.email,
+          'avatar_url': user.avatarUrl,
+          'language': user.language,
+        }));
+    notifyListeners();
+    return user;
+  }
+
+  UserProfile _profileFromJson(Map<String, dynamic> m) {
+    final email = J.str(m, 'email');
+    final name = J.str(m, 'name');
+    return UserProfile(
+      id: J.str(m, 'id'),
+      // OAuth accounts may arrive nameless — show the mailbox instead.
+      name: name.isNotEmpty ? name : email.split('@').first,
+      email: email,
+      avatarUrl: J.strOrNull(m, 'avatar_url'),
+      language: J.str(m, 'language', fallback: 'en'),
+    );
+  }
+
+  /// Reads the `exp` claim off a JWT without verifying it (the server is the
+  /// verifier — we only need the expiry for the refresh schedule).
+  static DateTime? _jwtExpiry(String jwt) {
+    for (final part in jwt.split('.')) {
+      try {
+        final decoded = utf8.decode(
+            base64Url.decode(base64Url.normalize(part)));
+        final map = jsonDecode(decoded);
+        if (map is Map && map['exp'] is num) {
+          return DateTime.fromMillisecondsSinceEpoch(
+              (map['exp'] as num).toInt() * 1000);
+        }
+      } catch (_) {
+        // Not a JSON segment (header/signature) — keep looking.
+      }
+    }
+    return null;
   }
 }

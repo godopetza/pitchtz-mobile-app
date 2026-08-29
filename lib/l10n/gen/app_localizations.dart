@@ -584,17 +584,17 @@ abstract class AppLocalizations {
   /// **'Sign in or create an account in seconds.'**
   String get loginSubtitle;
 
-  /// No description provided for @phoneNumberLabel.
+  /// No description provided for @emailLabel.
   ///
   /// In en, this message translates to:
-  /// **'PHONE NUMBER'**
-  String get phoneNumberLabel;
+  /// **'EMAIL'**
+  String get emailLabel;
 
-  /// No description provided for @phoneHint.
+  /// No description provided for @emailHint.
   ///
   /// In en, this message translates to:
-  /// **'754 123 456'**
-  String get phoneHint;
+  /// **'you@example.com'**
+  String get emailHint;
 
   /// No description provided for @sendCode.
   ///
@@ -638,11 +638,23 @@ abstract class AppLocalizations {
   /// **'Skip for now — browse pitches'**
   String get skipBrowse;
 
-  /// No description provided for @enterPhoneFirst.
+  /// No description provided for @enterEmailFirst.
   ///
   /// In en, this message translates to:
-  /// **'Enter your phone number first'**
-  String get enterPhoneFirst;
+  /// **'Enter a valid email address first'**
+  String get enterEmailFirst;
+
+  /// No description provided for @codeSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We emailed a 6-digit code to {email}. It’s valid for 10 minutes.'**
+  String codeSentTo(String email);
+
+  /// No description provided for @changeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a different email'**
+  String get changeEmail;
 
   /// No description provided for @signedInToast.
   ///
@@ -650,23 +662,11 @@ abstract class AppLocalizations {
   /// **'Karibu, {name}! You are signed in.'**
   String signedInToast(String name);
 
-  /// No description provided for @signedInGoogle.
+  /// No description provided for @socialSignInMobileOnly.
   ///
   /// In en, this message translates to:
-  /// **'Signed in with Google ✓'**
-  String get signedInGoogle;
-
-  /// No description provided for @signedInApple.
-  ///
-  /// In en, this message translates to:
-  /// **'Signed in with Apple ✓'**
-  String get signedInApple;
-
-  /// No description provided for @demoAuthNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Demo sign-in — runs on this device until accounts go live on the backend.'**
-  String get demoAuthNote;
+  /// **'Google & Apple sign-in are available in the mobile app.'**
+  String get socialSignInMobileOnly;
 
   /// No description provided for @profileTitle.
   ///
@@ -707,7 +707,7 @@ abstract class AppLocalizations {
   /// No description provided for @logOutConfirmMessage.
   ///
   /// In en, this message translates to:
-  /// **'You can sign back in anytime with your phone number.'**
+  /// **'You can sign back in anytime with your email.'**
   String get logOutConfirmMessage;
 
   /// No description provided for @loggedOutToast.

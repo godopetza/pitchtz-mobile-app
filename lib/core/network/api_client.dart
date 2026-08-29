@@ -3,15 +3,17 @@ import 'package:flutter/foundation.dart';
 
 import 'api_config.dart';
 import 'api_exception.dart';
+import 'token_store.dart';
 
 /// Thin wrapper around [Dio] that:
 ///  * targets the PitchTZ base URL,
+///  * attaches the bearer token from [TokenStore] when a session exists,
 ///  * unwraps the `{ success, data, message }` response envelope,
 ///  * converts every failure into a typed [ApiException].
 ///
 /// ViewModels never see Dio directly — they get plain `data` or an exception.
 class ApiClient {
-  ApiClient({Dio? dio})
+  ApiClient({TokenStore? tokens, Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
               baseUrl: ApiConfig.baseUrl,
@@ -21,6 +23,13 @@ class ApiClient {
               // We validate the envelope ourselves, so accept any status.
               validateStatus: (_) => true,
             )) {
+    if (tokens != null) {
+      _dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+        final token = tokens.token;
+        if (token != null) options.headers['Authorization'] = 'Bearer $token';
+        handler.next(options);
+      }));
+    }
     if (kDebugMode) {
       _dio.interceptors.add(LogInterceptor(
         requestBody: true,
@@ -58,6 +67,16 @@ class ApiClient {
   Future<dynamic> post(String path, {Object? body}) async {
     try {
       final res = await _dio.post(path, data: body);
+      return _unwrap(res);
+    } on DioException catch (e) {
+      throw _fromDio(e);
+    }
+  }
+
+  /// PUT returning the envelope's `data` (Map or null).
+  Future<dynamic> put(String path, {Object? body}) async {
+    try {
+      final res = await _dio.put(path, data: body);
       return _unwrap(res);
     } on DioException catch (e) {
       throw _fromDio(e);

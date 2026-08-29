@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 
 import '../entities/user_profile.dart';
 
-/// Player session management.
+/// Player session management against the live `/auth/*` endpoints.
 ///
-/// Backend player auth (`/auth/otp/*`, `/auth/oauth/*`) is still `planned`, so
-/// the current implementation keeps a **local device session** — but this
-/// contract is shaped for the real endpoints: swap the implementation to call
-/// them and store the JWTs instead, and nothing above this interface changes.
+/// Sessions are a 30-day bearer JWT. Two ways in:
+///  * **Email code** — `POST /auth/email/start` then `POST /auth/email/verify`.
+///  * **Google / Apple** — the app opens `/auth/{provider}/start` in a WebView
+///    and intercepts the redirect carrying `#oauth_token=<jwt>`, then adopts
+///    that token here.
 ///
 /// Extends [Listenable] so Profile/Explore react when the session changes.
 abstract class AuthRepository implements Listenable {
@@ -15,19 +16,25 @@ abstract class AuthRepository implements Listenable {
   UserProfile? get currentUser;
   bool get isSignedIn;
 
-  /// The 6-digit demo code pre-filled in the OTP boxes.
-  List<String> get demoCode;
+  /// `POST /auth/email/start` — emails a 6-digit code (valid 10 minutes).
+  Future<void> sendEmailCode(String email);
 
-  /// `POST /auth/otp/send` (stubbed locally today).
-  Future<void> sendCode(String phone);
+  /// `POST /auth/email/verify` — trades the code for a token and opens
+  /// the session. Throws [ApiException] on a wrong/expired code (400) or
+  /// after too many attempts (429).
+  Future<UserProfile> verifyEmailCode({
+    required String email,
+    required String code,
+  });
 
-  /// `POST /auth/otp/verify` — verifies and opens a session.
-  Future<UserProfile> verifyCode({required String phone, required String code});
+  /// Stores a JWT captured from the Google/Apple redirect and hydrates the
+  /// profile via `GET /auth/me`.
+  Future<UserProfile> adoptOAuthToken(String token);
 
-  /// `POST /auth/oauth/{provider}` — opens a session via Google / Apple.
-  Future<UserProfile> signInWithGoogle();
-  Future<UserProfile> signInWithApple();
+  /// Sliding refresh: `POST /auth/refresh` when the stored token is past
+  /// half-life. Silently signs out if the token turns out to be invalid.
+  Future<void> refreshIfNeeded();
 
-  /// `POST /auth/logout` — ends the session.
+  /// Drops the token and cached profile (sign-out is client-side).
   Future<void> signOut();
 }

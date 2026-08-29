@@ -49,6 +49,9 @@ dependencies:
   intl: any
   # Persists the local session and the chosen language
   shared_preferences: ^2.3.0
+  # In-app browser for Google/Apple sign-in — intercepts the #oauth_token=
+  # redirect that the API sends back after consent
+  webview_flutter: ^4.10.0
 
 dev_dependencies:
   flutter_test:

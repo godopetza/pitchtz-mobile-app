@@ -1,14 +1,18 @@
-/// The locally signed-in player.
+/// The signed-in player, as returned by `GET /auth/me` / the auth grants.
 class UserProfile {
   const UserProfile({
+    required this.id,
     required this.name,
-    required this.phone,
-    this.provider = 'phone',
+    required this.email,
+    this.avatarUrl,
+    this.language = 'en',
   });
 
+  final String id;
   final String name;
-  final String phone; // e.g. "+255 754 123 456" (may be empty for OAuth)
-  final String provider; // 'phone' | 'google' | 'apple'
+  final String email;
+  final String? avatarUrl; // Google/Apple picture when available
+  final String language; // 'en' | 'sw' — the account's preferred language
 
   /// "Juma Mwakalinga" -> "JM" for the avatar chip.
   String get initials {

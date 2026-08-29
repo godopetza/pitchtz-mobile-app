@@ -30,20 +30,7 @@ class ProfilePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Row(
               children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                      color: AppColors.primary, shape: BoxShape.circle),
-                  child: Text(
-                    vm.isSignedIn ? vm.user!.initials : '👤',
-                    style: TextStyle(
-                        color: AppColors.lime,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 19),
-                  ),
-                ),
+                _avatar(vm),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -53,13 +40,9 @@ class ProfilePage extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w800)),
                       Text(
-                        vm.isSignedIn
-                            ? (vm.user!.phone.isNotEmpty
-                                ? vm.user!.phone
-                                : vm.user!.provider == 'google'
-                                    ? 'Google'
-                                    : 'Apple')
-                            : loc.guestSubtitle,
+                        vm.isSignedIn ? vm.user!.email : loc.guestSubtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 12.5, color: AppColors.muted),
                       ),
@@ -194,6 +177,31 @@ class ProfilePage extends StatelessWidget {
       await vm.signOut();
       getIt<ToastController>().show(loc.loggedOutToast);
     }
+  }
+
+  /// Google/Apple picture when the account has one, initials otherwise.
+  Widget _avatar(ProfileViewModel vm) {
+    final url = vm.isSignedIn ? vm.user!.avatarUrl : null;
+    final fallback = Text(
+      vm.isSignedIn ? vm.user!.initials : '👤',
+      style: TextStyle(
+          color: AppColors.lime, fontWeight: FontWeight.w800, fontSize: 19),
+    );
+    return Container(
+      width: 58,
+      height: 58,
+      alignment: Alignment.center,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+          color: AppColors.primary, shape: BoxShape.circle),
+      child: url == null || url.isEmpty
+          ? fallback
+          : Image.network(url,
+              width: 58,
+              height: 58,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => fallback),
+    );
   }
 
   BoxDecoration _card() => BoxDecoration(
