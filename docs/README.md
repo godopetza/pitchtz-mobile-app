@@ -52,7 +52,9 @@ this contract is planned or aspirational.
 | Book & pay | `/bookings`, `…/pay`, `…/split`, `/pay/shares/{id}` | Venue page booking panel |
 | Teams & challenges | `/teams*`, `/me/teams`, `/challenges*` | `/teams` |
 | Match board | `/fixtures`, `/me/favorite-teams` | `/watch-parties#fixtures` |
-| Shop | `/shop/*` | `/shop` |
+| Shop | `/shop/*`, `/venues/{id}/products` | `/shop`, venue pages |
+| Deposit bookings | `/bookings/{id}/deposit` | Venue booking panel |
+| Watch spots | `/watch-spots` (list + apply) | `/watch-parties` |
 | City waitlist & venue leads | `/waitlist`, `/venues/enroll` | Homepage cities section, `/owners` |
 
 Questions → Ben (PitchTZ founder).
