@@ -23,8 +23,9 @@ this contract is planned or aspirational.
 - **Base URL:** `https://pitchtz-production.up.railway.app/v1`
 - **Envelope:** every response is `{ "success": bool, "data": …, "message": str }`;
   errors are `{ "success": false, "error": { "code", "message" } }`.
-- **Money:** integer Tanzanian shillings. **Time:** RFC 3339 UTC — display in
-  `Africa/Dar_es_Salaam` (+03:00).
+- **Money:** integer Tanzanian shillings. **Time:** RFC 3339 UTC — render in
+  the **device's own timezone** (the web app does; most users are in EAT
+  anyway, but don't hardcode +03:00).
 - **Auth:** Bearer JWT (30-day). Email code: `POST /auth/email/start` →
   `POST /auth/email/verify`. Google/Apple: open `/auth/google/start` in a
   custom tab and intercept the redirect's `#oauth_token=`. Refresh a
@@ -38,8 +39,12 @@ this contract is planned or aspirational.
   = someone is paying right now (render orange, not bookable).
 - **Payment operators** are never hardcoded — fetch them from the Malipo
   gateway: `GET https://api.malipo.flutterai.dev/v1/providers/active`.
-- **Fixtures** (`GET /v1/fixtures`) carry football + basketball with live
-  scores; keep the "courtesy of LiveScore" credit visible.
+- **Fixtures** (`GET /v1/fixtures`) carry six sports — football, basketball,
+  tennis, cricket, F1, boxing — with live scores, preloaded goal `timeline`
+  (scorer, assist, minute, `tm` = 1 home / 2 away) and team badges
+  (`home_img`/`away_img`). National sides look better under a country flag than
+  the scraped federation badge — the web app does that. Keep the "courtesy of
+  LiveScore" credit visible.
 
 ## Feature map
 
@@ -56,5 +61,9 @@ this contract is planned or aspirational.
 | Deposit bookings | `/bookings/{id}/deposit` | Venue booking panel |
 | Watch spots | `/watch-spots` (list + apply) | `/watch-parties` |
 | City waitlist & venue leads | `/waitlist`, `/venues/enroll` | Homepage cities section, `/owners` |
+| Push notifications | `/me/devices` (register / unregister) | — see [PUSH_NOTIFICATIONS.md](./PUSH_NOTIFICATIONS.md) |
+
+**Push notifications** are live server-side — read
+[PUSH_NOTIFICATIONS.md](./PUSH_NOTIFICATIONS.md) before wiring FCM.
 
 Questions → Ben (PitchTZ founder).
