@@ -12,7 +12,7 @@ class VenueDto {
     final pitches = J.objList(m, 'pitches');
     final firstPitch = pitches.isNotEmpty ? pitches.first : const <String, dynamic>{};
     final photos = J.objList(m, 'photos');
-    final photoUrl = _firstPhotoUrl(photos);
+    final allUrls = _allPhotoUrls(photos);
 
     return Pitch(
       id: J.str(m, 'id'),
@@ -22,7 +22,8 @@ class VenueDto {
       pricePerHour: _priceFrom(m, pitches),
       format: Display.format(J.str(firstPitch, 'format')),
       surface: Display.surface(J.str(firstPitch, 'surface')),
-      imageUrl: photoUrl,
+      imageUrl: allUrls.isNotEmpty ? allUrls.first : null,
+      photoUrls: allUrls,
       latitude: J.dblOrNull(m, 'latitude'),
       longitude: J.dblOrNull(m, 'longitude'),
       verified: J.boolean(m, 'verified'),
@@ -48,16 +49,21 @@ class VenueDto {
     return prices.isEmpty ? 0 : prices.reduce((a, b) => a < b ? a : b);
   }
 
-  static String? _firstPhotoUrl(List<Map<String, dynamic>> photos) {
-    if (photos.isEmpty) return null;
+  static bool _isValidUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    final uri = Uri.tryParse(url);
+    return uri != null && uri.hasScheme && url.contains('.');
+  }
+
+  static List<String> _allPhotoUrls(List<Map<String, dynamic>> photos) {
+    if (photos.isEmpty) return const [];
     final sorted = [...photos]
       ..sort((a, b) => J.intVal(a, 'sort').compareTo(J.intVal(b, 'sort')));
-    final url = J.strOrNull(sorted.first, 'url');
-    // Guard against the spec's junk example URLs (e.g. "http://qH.wiwJU-6").
-    if (url == null) return null;
-    final uri = Uri.tryParse(url);
-    if (uri == null || !uri.hasScheme || !url.contains('.')) return null;
-    return url;
+    return sorted
+        .map((p) => J.strOrNull(p, 'url'))
+        .where(_isValidUrl)
+        .cast<String>()
+        .toList();
   }
 }
 

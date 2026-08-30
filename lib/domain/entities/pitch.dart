@@ -11,6 +11,7 @@ class Pitch {
     required this.format,
     required this.surface,
     this.imageUrl,
+    this.photoUrls = const [],
     this.latitude,
     this.longitude,
     this.verified = false,
@@ -27,6 +28,7 @@ class Pitch {
   final String format; // display, e.g. "5-a-side"
   final String surface; // display, e.g. "Artificial turf"
   final String? imageUrl; // first venue photo, if any
+  final List<String> photoUrls; // all venue photos sorted by sort order
   final double? latitude;
   final double? longitude;
   final bool verified;
@@ -62,6 +64,7 @@ class Pitch {
         format: format,
         surface: surface,
         imageUrl: imageUrl,
+        photoUrls: photoUrls,
         latitude: latitude,
         longitude: longitude,
         verified: verified,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../di/injection.dart';
 import '../../features/ai_assistant/view/ai_page.dart';
+import '../../features/booking/viewmodel/booking_flow_viewmodel.dart';
 import '../../features/auth/view/login_page.dart';
 import '../../features/auth/viewmodel/login_viewmodel.dart';
 import '../../features/booking/view/processing_page.dart';
@@ -62,16 +63,28 @@ class AppRouter {
         ));
 
       case Routes.summary:
-        return _slide(const SummaryPage());
+        return _slide(ChangeNotifierProvider.value(
+          value: getIt<BookingFlowViewModel>(),
+          child: const SummaryPage(),
+        ));
 
       case Routes.processing:
-        return _fade(const ProcessingPage());
+        return _fade(ChangeNotifierProvider.value(
+          value: getIt<BookingFlowViewModel>(),
+          child: const ProcessingPage(),
+        ));
 
       case Routes.success:
-        return _fade(const SuccessPage());
+        return _fade(ChangeNotifierProvider.value(
+          value: getIt<BookingFlowViewModel>(),
+          child: const SuccessPage(),
+        ));
 
       case Routes.scanPay:
-        return _slide(const ScanPayPage());
+        return _slide(ChangeNotifierProvider.value(
+          value: getIt<BookingFlowViewModel>(),
+          child: const ScanPayPage(),
+        ));
 
       case Routes.fixtures:
         return _slide(ChangeNotifierProvider(

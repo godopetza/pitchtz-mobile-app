@@ -6,7 +6,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/status_views.dart';
 import '../../../l10n/gen/app_localizations.dart';
-import '../../shell/viewmodel/shell_viewmodel.dart';
 import '../viewmodel/explore_viewmodel.dart';
 import '../widgets/explore_sheets.dart';
 import '../widgets/pitch_cards.dart';
@@ -126,18 +125,18 @@ class ExplorePage extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => context.read<ShellViewModel>().setIndex(4),
+            onTap: () => Scaffold.of(context).openDrawer(),
             child: Container(
               width: 42,
               height: 42,
               alignment: Alignment.center,
-              decoration: const BoxDecoration(
-                  color: AppColors.primary, shape: BoxShape.circle),
-              child: Text('JM',
-                  style: TextStyle(
-                      color: AppColors.lime,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15)),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.border),
+              ),
+              child: const Icon(Icons.menu_rounded,
+                  size: 20, color: AppColors.primary),
             ),
           ),
         ],

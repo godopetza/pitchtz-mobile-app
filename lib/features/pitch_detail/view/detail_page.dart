@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/router/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/formatters.dart';
@@ -8,9 +9,11 @@ import '../../../core/widgets/buttons.dart';
 import '../../../core/widgets/status_views.dart';
 import '../../../core/widgets/tap_scale.dart';
 import '../../../core/widgets/turf_image.dart';
+import '../../../di/injection.dart';
 import '../../../domain/entities/review.dart';
 import '../../../domain/entities/time_slot.dart';
 import '../../../domain/entities/venue_extra.dart';
+import '../../../features/booking/viewmodel/booking_flow_viewmodel.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../viewmodel/detail_viewmodel.dart';
 
@@ -60,62 +63,8 @@ class DetailPage extends StatelessWidget {
         ListView(
           padding: EdgeInsets.zero,
           children: [
-            // ---- Hero ----
-            SizedBox(
-              height: 300,
-              child: TurfImage(
-                imageUrl: pitch.imageUrl,
-                gradient1: Color(pitch.gradient1),
-                gradient2: Color(pitch.gradient2),
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              const Color(0xFF0A1E16).withValues(alpha: 0.35),
-                              Colors.transparent,
-                              const Color(0xFF0A1E16).withValues(alpha: 0.3),
-                            ],
-                            stops: const [0, 0.4, 1],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 58,
-                      left: 16,
-                      right: 16,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          CircleIconButton(
-                            background:
-                                AppColors.cream.withValues(alpha: 0.94),
-                            onTap: () => Navigator.pop(context),
-                            child:
-                                const Text('‹', style: TextStyle(fontSize: 17)),
-                          ),
-                          CircleIconButton(
-                            background:
-                                AppColors.cream.withValues(alpha: 0.94),
-                            onTap: () => vm.showComingSoon(
-                                AppLocalizations.of(context)
-                                    .favoritesComingSoonToast),
-                            child: const Text('♡',
-                                style: TextStyle(
-                                    fontSize: 16, color: AppColors.ink)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // ---- Hero carousel ----
+            _PhotoCarousel(vm: vm),
             // ---- Body ----
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 130),
@@ -230,7 +179,7 @@ class DetailPage extends StatelessWidget {
             ),
           ],
         ),
-        // ---- Sticky CTA (booking is a planned backend feature) ----
+        // ---- Sticky CTA ----
         Positioned(
           left: 0,
           right: 0,
@@ -250,11 +199,25 @@ class DetailPage extends StatelessWidget {
             ),
             child: PrimaryButton(
               label: vm.hasSelection
-                  ? AppLocalizations.of(context)
-                      .bookingComingSoonPrice(Formatters.tsh(vm.pitchFee))
-                  : AppLocalizations.of(context).bookingComingSoon,
-              onTap: () => vm.showComingSoon(
-                  AppLocalizations.of(context).bookingComingSoonToast),
+                  ? 'Book · ${Formatters.tsh(vm.pitchFee)}'
+                  : 'Select a time slot to book',
+              onTap: vm.hasSelection
+                  ? () {
+                      final bfvm = getIt<BookingFlowViewModel>();
+                      bfvm.start(
+                        pitch: vm.pitch,
+                        pitchId: vm.bestPitchId,
+                        pitchFee: vm.pitchFee,
+                        dateLabel: vm.dates[vm.dateIndex].label,
+                        timeLabel: vm.timeLabel,
+                        durationHours: vm.durationHours,
+                        format: vm.pitch.format,
+                        startsAt: vm.bookingStartsAt,
+                        endsAt: vm.bookingEndsAt,
+                      );
+                      Navigator.pushNamed(context, Routes.summary);
+                    }
+                  : null,
             ),
           ),
         ),
@@ -722,4 +685,142 @@ class _SectionTitle extends StatelessWidget {
         padding: const EdgeInsets.only(top: 22, bottom: 12),
         child: Text(text, style: AppText.title.copyWith(fontSize: 17)),
       );
+}
+
+// ─── Photo Carousel ───────────────────────────────────────────────────────────
+
+class _PhotoCarousel extends StatefulWidget {
+  const _PhotoCarousel({required this.vm});
+  final DetailViewModel vm;
+
+  @override
+  State<_PhotoCarousel> createState() => _PhotoCarouselState();
+}
+
+class _PhotoCarouselState extends State<_PhotoCarousel> {
+  int _page = 0;
+  final PageController _ctrl = PageController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = widget.vm;
+    final pitch = vm.pitch;
+    final urls = vm.photoUrls;
+    final count = urls.isEmpty ? 1 : urls.length;
+
+    return SizedBox(
+      height: 300,
+      child: Stack(
+        children: [
+          // Slides
+          PageView.builder(
+            controller: _ctrl,
+            itemCount: count,
+            onPageChanged: (i) => setState(() => _page = i),
+            itemBuilder: (_, i) {
+              final url = urls.isEmpty ? null : urls[i];
+              return TurfImage(
+                imageUrl: url,
+                gradient1: Color(pitch.gradient1),
+                gradient2: Color(pitch.gradient2),
+              );
+            },
+          ),
+          // Overlay gradient
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF0A1E16).withValues(alpha: 0.35),
+                    Colors.transparent,
+                    const Color(0xFF0A1E16).withValues(alpha: 0.3),
+                  ],
+                  stops: const [0, 0.4, 1],
+                ),
+              ),
+            ),
+          ),
+          // Back + favourite buttons
+          Positioned(
+            top: 58,
+            left: 16,
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CircleIconButton(
+                  background: AppColors.cream.withValues(alpha: 0.94),
+                  onTap: () => Navigator.pop(context),
+                  child: const Text('‹', style: TextStyle(fontSize: 17)),
+                ),
+                CircleIconButton(
+                  background: AppColors.cream.withValues(alpha: 0.94),
+                  onTap: () => vm.showComingSoon(
+                      AppLocalizations.of(context).favoritesComingSoonToast),
+                  child: const Text('♡',
+                      style: TextStyle(fontSize: 16, color: AppColors.ink)),
+                ),
+              ],
+            ),
+          ),
+          // Dot indicators (only when there are multiple photos)
+          if (count > 1)
+            Positioned(
+              bottom: 14,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (int i = 0; i < count; i++)
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: i == _page ? 18 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: i == _page
+                            ? AppColors.lime
+                            : AppColors.cream.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          // Photo count badge (top-right of image area)
+          if (count > 1)
+            Positioned(
+              top: 58,
+              right: 68,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.ink.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_page + 1}/$count',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

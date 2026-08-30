@@ -160,6 +160,41 @@ class DetailViewModel extends ChangeNotifier {
   bool get hasSelection => _selectedHours.isNotEmpty;
   List<int> get selectedHours => List.unmodifiable(_selectedHours..sort());
 
+  /// All venue photos sorted by sort order (for the detail carousel).
+  List<String> get photoUrls => _pitch?.photoUrls ?? const [];
+
+  /// The first pitch ID not blocked at all selected hours; fallback to venue ID.
+  String get bestPitchId {
+    if (_availability.isEmpty) return _venueId;
+    final hs = selectedHours;
+    if (hs.isEmpty) return _availability.first.pitchId;
+    for (final pa in _availability) {
+      final allFree = hs.every((h) => !pa.unavailable.any((w) {
+            final s = w.startsAt.toLocal();
+            final e = w.endsAt.toLocal();
+            return s.hour <= h && h < (e.hour == 0 ? 24 : e.hour);
+          }));
+      if (allFree) return pa.pitchId;
+    }
+    return _availability.first.pitchId;
+  }
+
+  /// Local (EAT) start DateTime for the booking.
+  DateTime get bookingStartsAt {
+    final iso = _dates[_dateIndex].iso;
+    final parts = iso.split('-');
+    return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]),
+        selectedHours.isNotEmpty ? selectedHours.first : 8);
+  }
+
+  /// Local (EAT) end DateTime for the booking (last selected hour + 1 h).
+  DateTime get bookingEndsAt {
+    final iso = _dates[_dateIndex].iso;
+    final parts = iso.split('-');
+    final endH = selectedHours.isNotEmpty ? selectedHours.last + 1 : 9;
+    return DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]), endH);
+  }
+
   /// Consecutive-slot selection (kept for realism; booking is gated).
   void pickSlot(TimeSlot slot) {
     if (!slot.available) return;
