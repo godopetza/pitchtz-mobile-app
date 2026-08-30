@@ -27,6 +27,15 @@ class AppLocalizationsSw extends AppLocalizations {
   String get navFavorites => 'Vipendwa';
 
   @override
+  String get navFixtures => 'Mechi';
+
+  @override
+  String get navShop => 'Duka';
+
+  @override
+  String get navWatchSpots => 'Angalia';
+
+  @override
   String get navProfile => 'Wasifu';
 
   @override

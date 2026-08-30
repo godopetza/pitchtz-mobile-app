@@ -10,17 +10,23 @@ import '../data/repositories/auth_repository_impl.dart';
 import '../data/repositories/booking_repository_impl.dart';
 import '../data/repositories/city_repository_impl.dart';
 import '../data/repositories/favorites_repository_impl.dart';
+import '../data/repositories/fixture_repository_impl.dart';
 import '../data/repositories/payment_repository_impl.dart';
 import '../data/repositories/pitch_repository_impl.dart';
+import '../data/repositories/shop_repository_impl.dart';
 import '../data/repositories/teams_repository_impl.dart';
+import '../data/repositories/watch_spot_repository_impl.dart';
 import '../domain/repositories/ai_repository.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/booking_repository.dart';
 import '../domain/repositories/city_repository.dart';
 import '../domain/repositories/favorites_repository.dart';
+import '../domain/repositories/fixture_repository.dart';
 import '../domain/repositories/payment_repository.dart';
 import '../domain/repositories/pitch_repository.dart';
+import '../domain/repositories/shop_repository.dart';
 import '../domain/repositories/teams_repository.dart';
+import '../domain/repositories/watch_spot_repository.dart';
 import '../domain/usecases/booking_calculator.dart';
 import '../domain/usecases/search_pitches_with_ai.dart';
 import '../domain/usecases/toggle_favorite.dart';
@@ -29,11 +35,14 @@ import '../features/booking/viewmodel/booking_flow_viewmodel.dart';
 import '../features/bookings/viewmodel/bookings_viewmodel.dart';
 import '../features/explore/viewmodel/explore_viewmodel.dart';
 import '../features/explore/viewmodel/results_viewmodel.dart';
+import '../features/fixtures/viewmodel/fixtures_viewmodel.dart';
 import '../features/onboarding/viewmodel/onboarding_viewmodel.dart';
 import '../features/pitch_detail/viewmodel/detail_viewmodel.dart';
 import '../features/profile/viewmodel/profile_viewmodel.dart';
 import '../features/shell/viewmodel/shell_viewmodel.dart';
+import '../features/shop/viewmodel/shop_viewmodel.dart';
 import '../features/teams/viewmodel/teams_viewmodel.dart';
+import '../features/watch_spots/viewmodel/watch_spots_viewmodel.dart';
 
 /// Global service locator. Repositories/clients are singletons; ViewModels are
 /// factories so each screen gets a fresh instance.
@@ -51,19 +60,41 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<ApiClient>(() => ApiClient(tokens: getIt()));
 
   // ---- Repositories (data layer, singletons) ----
+
   // Live (API-backed):
   getIt.registerLazySingleton<PitchRepository>(
       () => PitchRepositoryImpl(getIt()));
   getIt.registerLazySingleton<CityRepository>(
       () => CityRepositoryImpl(getIt()));
+
+  // Booking — live: POST /bookings, pay, split, deposit; GET /bookings
   getIt.registerLazySingleton<BookingRepository>(
-      () => BookingRepositoryImpl(getIt()));
-  // Kept for coming-soon flows:
-  getIt.registerLazySingleton<FavoritesRepository>(
-      () => FavoritesRepositoryImpl());
-  getIt.registerLazySingleton<TeamsRepository>(() => TeamsRepositoryImpl(getIt()));
+      () => BookingRepositoryImpl(getIt<ApiClient>()));
+
+  // Payment — uses its own Dio instance pointed at the Malipo gateway
   getIt.registerLazySingleton<PaymentRepository>(
       () => PaymentRepositoryImpl());
+
+  // Teams — live: /teams*, /challenges*, /me/teams, /me/favorite-teams
+  getIt.registerLazySingleton<TeamsRepository>(
+      () => TeamsRepositoryImpl(getIt<ApiClient>()));
+
+  // Fixtures — live: GET /fixtures, GET /fixtures/:id/detail
+  getIt.registerLazySingleton<FixtureRepository>(
+      () => FixtureRepositoryImpl(getIt<ApiClient>()));
+
+  // Shop — live: /shop/products, /shop/orders, /venues/:id/products
+  getIt.registerLazySingleton<ShopRepository>(
+      () => ShopRepositoryImpl(getIt<ApiClient>()));
+
+  // Watch Spots — live: GET /watch-spots, POST /watch-spots
+  getIt.registerLazySingleton<WatchSpotRepository>(
+      () => WatchSpotRepositoryImpl(getIt<ApiClient>()));
+
+  // In-memory / coming-soon:
+  getIt.registerLazySingleton<FavoritesRepository>(
+      () => FavoritesRepositoryImpl());
+
   // Live player auth: email code + Google/Apple OAuth, 30-day bearer JWT.
   getIt.registerLazySingleton<AuthRepository>(
       () => AuthRepositoryImpl(prefs, getIt(), getIt()));
@@ -86,4 +117,11 @@ Future<void> configureDependencies() async {
       () => BookingFlowViewModel(getIt(), getIt(), getIt()));
   getIt.registerFactory(() => BookingsViewModel(getIt()));
   getIt.registerFactory(() => TeamsViewModel(getIt(), getIt(), getIt()));
+
+  // New feature ViewModels:
+  getIt.registerFactory(() => FixturesViewModel(getIt<FixtureRepository>()));
+  getIt.registerFactory(
+      () => ShopViewModel(getIt<ShopRepository>(), getIt<ToastController>()));
+  getIt.registerFactory(
+      () => WatchSpotsViewModel(getIt<WatchSpotRepository>()));
 }

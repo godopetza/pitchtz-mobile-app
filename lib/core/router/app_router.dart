@@ -11,12 +11,18 @@ import '../../features/booking/view/success_page.dart';
 import '../../features/booking/view/summary_page.dart';
 import '../../features/explore/view/results_page.dart';
 import '../../features/explore/viewmodel/results_viewmodel.dart';
+import '../../features/fixtures/view/fixtures_page.dart';
+import '../../features/fixtures/viewmodel/fixtures_viewmodel.dart';
 import '../../features/onboarding/view/onboarding_page.dart';
 import '../../features/onboarding/view/splash_page.dart';
 import '../../features/onboarding/viewmodel/onboarding_viewmodel.dart';
 import '../../features/pitch_detail/view/detail_page.dart';
 import '../../features/pitch_detail/viewmodel/detail_viewmodel.dart';
 import '../../features/shell/view/main_shell.dart';
+import '../../features/shop/view/shop_page.dart';
+import '../../features/shop/viewmodel/shop_viewmodel.dart';
+import '../../features/watch_spots/view/watch_spots_page.dart';
+import '../../features/watch_spots/viewmodel/watch_spots_viewmodel.dart';
 import 'route_names.dart';
 
 /// Central route table. Each screen is wired to its ViewModel here so views stay
@@ -66,6 +72,24 @@ class AppRouter {
 
       case Routes.scanPay:
         return _slide(const ScanPayPage());
+
+      case Routes.fixtures:
+        return _slide(ChangeNotifierProvider(
+          create: (_) => getIt<FixturesViewModel>()..load(),
+          child: const FixturesPage(),
+        ));
+
+      case Routes.shop:
+        return _slide(ChangeNotifierProvider(
+          create: (_) => getIt<ShopViewModel>()..load(),
+          child: const ShopPage(),
+        ));
+
+      case Routes.watchSpots:
+        return _slide(ChangeNotifierProvider(
+          create: (_) => getIt<WatchSpotsViewModel>()..load(),
+          child: const WatchSpotsPage(),
+        ));
 
       case Routes.ai:
         return _slide(const AiPage());

@@ -134,6 +134,24 @@ abstract class AppLocalizations {
   /// **'Favorites'**
   String get navFavorites;
 
+  /// No description provided for @navFixtures.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixtures'**
+  String get navFixtures;
+
+  /// No description provided for @navShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get navShop;
+
+  /// No description provided for @navWatchSpots.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch'**
+  String get navWatchSpots;
+
   /// No description provided for @navProfile.
   ///
   /// In en, this message translates to:
