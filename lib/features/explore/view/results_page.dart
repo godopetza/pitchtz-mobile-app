@@ -13,7 +13,6 @@ import '../../../di/injection.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../viewmodel/results_viewmodel.dart';
 import '../widgets/pitch_cards.dart';
-import 'explore_map_view.dart';
 
 class ResultsPage extends StatelessWidget {
   const ResultsPage({super.key});

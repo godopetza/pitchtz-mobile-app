@@ -1,6 +1,40 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../../domain/entities/pitch.dart';
+
+/// Projects venue lat/lng onto fractional (0..1) positions inside the stylised
+/// map using the bounding box of all venues, padded so pins stay on-screen.
+/// Used by the results-page fake map; the explore map now uses Google Maps.
+class MapProjection {
+  MapProjection(List<Pitch> venues) {
+    final withCoords =
+        venues.where((v) => v.latitude != null && v.longitude != null).toList();
+    if (withCoords.isEmpty) return;
+    _minLat = withCoords.map((v) => v.latitude!).reduce((a, b) => a < b ? a : b);
+    _maxLat = withCoords.map((v) => v.latitude!).reduce((a, b) => a > b ? a : b);
+    _minLng = withCoords.map((v) => v.longitude!).reduce((a, b) => a < b ? a : b);
+    _maxLng = withCoords.map((v) => v.longitude!).reduce((a, b) => a > b ? a : b);
+  }
+
+  double? _minLat, _maxLat, _minLng, _maxLng;
+
+  (double, double) project(Pitch v, int index, int total) {
+    const pad = 0.15;
+    final lat = v.latitude, lng = v.longitude;
+    if (lat == null ||
+        lng == null ||
+        _minLat == null ||
+        _maxLat == _minLat ||
+        _maxLng == _minLng) {
+      final t = total <= 1 ? 0.5 : index / (total - 1);
+      return (pad + t * (1 - 2 * pad), 0.25 + 0.5 * ((index * 7) % 10) / 10);
+    }
+    final x = (lng - _minLng!) / (_maxLng! - _minLng!);
+    final y = 1 - (lat - _minLat!) / (_maxLat! - _minLat!);
+    return (pad + x * (1 - 2 * pad), pad + y * (1 - 2 * pad));
+  }
+}
 
 /// The stylised static "map" used on the explore-map and results-map screens:
 /// a grid, a few diagonal "roads", and the Indian Ocean in the corner. Pins are

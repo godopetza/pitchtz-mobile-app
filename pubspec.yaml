@@ -52,6 +52,10 @@ dependencies:
   # In-app browser for Google/Apple sign-in — intercepts the #oauth_token=
   # redirect that the API sends back after consent
   webview_flutter: ^4.10.0
+  # Real Google Maps tile rendering + venue markers
+  google_maps_flutter: ^2.10.0
+  # Device GPS for "Near me" and map centring (no API key required)
+  geolocator: ^13.0.2
 
 dev_dependencies:
   flutter_test:

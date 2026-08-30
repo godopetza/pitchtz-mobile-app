@@ -717,34 +717,39 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
     return SizedBox(
       height: 300,
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          // Slides
-          PageView.builder(
-            controller: _ctrl,
-            itemCount: count,
-            onPageChanged: (i) => setState(() => _page = i),
-            itemBuilder: (_, i) {
-              final url = urls.isEmpty ? null : urls[i];
-              return TurfImage(
-                imageUrl: url,
-                gradient1: Color(pitch.gradient1),
-                gradient2: Color(pitch.gradient2),
-              );
-            },
-          ),
-          // Overlay gradient
+          // Slides — expand to fill the 300 px SizedBox
           Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF0A1E16).withValues(alpha: 0.35),
-                    Colors.transparent,
-                    const Color(0xFF0A1E16).withValues(alpha: 0.3),
-                  ],
-                  stops: const [0, 0.4, 1],
+            child: PageView.builder(
+              controller: _ctrl,
+              itemCount: count,
+              onPageChanged: (i) => setState(() => _page = i),
+              itemBuilder: (_, i) {
+                final url = urls.isEmpty ? null : urls[i];
+                return TurfImage(
+                  imageUrl: url,
+                  gradient1: Color(pitch.gradient1),
+                  gradient2: Color(pitch.gradient2),
+                );
+              },
+            ),
+          ),
+          // Overlay gradient — IgnorePointer so swipe events reach PageView
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFF0A1E16).withValues(alpha: 0.35),
+                      Colors.transparent,
+                      const Color(0xFF0A1E16).withValues(alpha: 0.3),
+                    ],
+                    stops: const [0, 0.4, 1],
+                  ),
                 ),
               ),
             ),
@@ -778,23 +783,25 @@ class _PhotoCarouselState extends State<_PhotoCarousel> {
               bottom: 14,
               left: 0,
               right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (int i = 0; i < count; i++)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: i == _page ? 18 : 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: i == _page
-                            ? AppColors.lime
-                            : AppColors.cream.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(3),
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    for (int i = 0; i < count; i++)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: i == _page ? 18 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: i == _page
+                              ? AppColors.lime
+                              : AppColors.cream.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           // Photo count badge (top-right of image area)

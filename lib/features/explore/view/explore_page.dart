@@ -5,14 +5,44 @@ import '../../../core/router/route_names.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/status_views.dart';
+import '../../../domain/entities/pitch.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../viewmodel/explore_viewmodel.dart';
 import '../widgets/explore_sheets.dart';
 import '../widgets/pitch_cards.dart';
 import 'explore_map_view.dart';
 
-class ExplorePage extends StatelessWidget {
+class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
+
+  @override
+  State<ExplorePage> createState() => _ExplorePageState();
+}
+
+class _ExplorePageState extends State<ExplorePage> {
+  bool _searchOpen = false;
+  final _searchCtrl = TextEditingController();
+  final _focus = FocusNode();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _openSearch() {
+    setState(() => _searchOpen = true);
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _focus.requestFocus());
+  }
+
+  void _closeSearch() {
+    _searchCtrl.clear();
+    context.read<ExploreViewModel>().onSearchChanged('');
+    _focus.unfocus();
+    setState(() => _searchOpen = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,15 +51,26 @@ class ExplorePage extends StatelessWidget {
       return Container(color: AppColors.cream, child: const ExploreMapView());
     }
 
-    return Container(
-      color: AppColors.cream,
-      child: Column(
-        children: [
-          _header(context, vm),
-          _searchRow(context, vm),
-          Expanded(child: _body(context, vm)),
-        ],
-      ),
+    return Stack(
+      children: [
+        Container(
+          color: AppColors.cream,
+          child: Column(
+            children: [
+              _header(context, vm),
+              _searchRow(context, vm),
+              Expanded(child: _body(context, vm)),
+            ],
+          ),
+        ),
+        if (_searchOpen)
+          _HomeSearchOverlay(
+            vm: vm,
+            textCtrl: _searchCtrl,
+            focusNode: _focus,
+            onClose: _closeSearch,
+          ),
+      ],
     );
   }
 
@@ -151,7 +192,7 @@ class ExplorePage extends StatelessWidget {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => Navigator.pushNamed(context, Routes.results),
+              onTap: _openSearch,
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -165,7 +206,7 @@ class ExplorePage extends StatelessWidget {
                     const Icon(Icons.search, size: 16, color: AppColors.muted),
                     const SizedBox(width: 10),
                     Text(AppLocalizations.of(context).searchHint,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 14,
                             color: AppColors.faint,
                             fontWeight: FontWeight.w500)),
@@ -603,4 +644,303 @@ class ExplorePage extends StatelessWidget {
       ],
     );
   }
+}
+
+// ─── Home Places Search Overlay ───────────────────────────────────────────────
+
+class _HomeSearchOverlay extends StatelessWidget {
+  const _HomeSearchOverlay({
+    required this.vm,
+    required this.textCtrl,
+    required this.focusNode,
+    required this.onClose,
+  });
+
+  final ExploreViewModel vm;
+  final TextEditingController textCtrl;
+  final FocusNode focusNode;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.cream,
+      child: Column(
+        children: [
+          // Top bar with input + cancel
+          Container(
+            padding: EdgeInsets.fromLTRB(
+                16, 56 + MediaQuery.of(context).padding.top, 16, 10),
+            color: AppColors.cream,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.primary),
+                      boxShadow: [
+                        BoxShadow(
+                            color: AppColors.ink.withValues(alpha: 0.06),
+                            blurRadius: 8),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search,
+                            size: 16, color: AppColors.primary),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: textCtrl,
+                            focusNode: focusNode,
+                            autofocus: true,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.ink,
+                            ),
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              border: InputBorder.none,
+                              hintText:
+                                  'Search area, pitch name or location…',
+                              hintStyle: TextStyle(
+                                  color: AppColors.faint,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 13.5),
+                            ),
+                            onChanged: vm.onSearchChanged,
+                          ),
+                        ),
+                        if (textCtrl.text.isNotEmpty)
+                          GestureDetector(
+                            onTap: () {
+                              textCtrl.clear();
+                              vm.onSearchChanged('');
+                            },
+                            child: const Icon(Icons.close,
+                                size: 15, color: AppColors.muted),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: onClose,
+                  child: const Text('Cancel',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary)),
+                ),
+              ],
+            ),
+          ),
+          // Results list
+          Expanded(
+            child: vm.suggestionsLoading
+                ? const Center(
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.primary),
+                    ),
+                  )
+                : ListView(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
+                    children: [
+                      // Places API suggestions
+                      if (vm.suggestions.isNotEmpty) ...[
+                        _section('PLACES'),
+                        for (final s in vm.suggestions)
+                          _resultTile(
+                            context,
+                            icon: Icons.location_on_outlined,
+                            title: s.mainText,
+                            subtitle: s.secondaryText,
+                            onTap: () {
+                              textCtrl.clear();
+                              vm.selectSuggestion(s);
+                              vm.showMap();
+                              onClose();
+                            },
+                          ),
+                        const SizedBox(height: 8),
+                      ],
+                      // Venue areas
+                      if (vm.areas.isNotEmpty) ...[
+                        _section('AREAS IN DAR ES SALAAM'),
+                        for (final a in _filteredAreas(vm))
+                          _resultTile(
+                            context,
+                            icon: Icons.grid_view_rounded,
+                            title: a.name,
+                            subtitle:
+                                '${a.count} ${a.count == 1 ? 'pitch' : 'pitches'}',
+                            onTap: () {
+                              textCtrl.clear();
+                              vm.pickMapArea(a.name);
+                              vm.showMap();
+                              onClose();
+                            },
+                          ),
+                        const SizedBox(height: 8),
+                      ],
+                      // Venues
+                      _section('VENUES'),
+                      for (final v in _filteredVenues(vm))
+                        _venueTile(context, v, onClose),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Area> _filteredAreas(ExploreViewModel vm) {
+    final q = textCtrl.text.toLowerCase();
+    if (q.isEmpty) return vm.areas;
+    return vm.areas
+        .where((a) => a.name.toLowerCase().contains(q))
+        .toList();
+  }
+
+  List<Pitch> _filteredVenues(ExploreViewModel vm) {
+    final q = textCtrl.text.toLowerCase();
+    if (q.isEmpty) return vm.venues;
+    return vm.venues
+        .where((v) =>
+            v.name.toLowerCase().contains(q) ||
+            v.area.toLowerCase().contains(q))
+        .toList();
+  }
+
+  Widget _section(String label) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.8,
+            color: AppColors.muted,
+          ),
+        ),
+      );
+
+  Widget _resultTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Icon(icon, size: 17, color: AppColors.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w700)),
+                  if (subtitle.isNotEmpty)
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.muted)),
+                ],
+              ),
+            ),
+            const Icon(Icons.north_west,
+                size: 14, color: AppColors.faint),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _venueTile(
+      BuildContext context, Pitch v, VoidCallback onClose) {
+    return InkWell(
+      onTap: () {
+        textCtrl.clear();
+        Navigator.pushNamed(context, Routes.detail, arguments: v.id);
+        onClose();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 46,
+                height: 42,
+                child: v.imageUrl != null
+                    ? Image.network(v.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _gradientBox(v))
+                    : _gradientBox(v),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(v.name,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w700)),
+                  Text(
+                    '${v.area} · ★ ${v.ratingLabel}',
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.muted),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'TSh ${v.pricePerHour ~/ 1000}k/hr',
+              style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _gradientBox(Pitch v) => Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(v.gradient1), Color(v.gradient2)],
+          ),
+        ),
+      );
 }
