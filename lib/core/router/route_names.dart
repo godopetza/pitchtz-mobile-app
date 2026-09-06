@@ -10,6 +10,7 @@ class Routes {
   // Discovery / venue flow
   static const results = '/results';
   static const detail = '/detail';
+  static const map = '/map'; // full-screen venue map (Bolt-style)
 
   // Booking flow
   static const summary = '/summary';

@@ -39,4 +39,20 @@ class Formatters {
   /// Rounds a per-player share up to the nearest 100, like the design.
   static int roundShare(num amount, int players) =>
       ((amount / players) / 100).ceil() * 100;
+
+  /// Short human-readable date+time in Africa/Dar_es_Salaam (+03:00).
+  /// e.g. "12 Aug, 3:00 PM"
+  static String dateTime(DateTime utc) {
+    final local = utc.toLocal();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final d = local.day;
+    final m = months[local.month - 1];
+    final ap = local.hour >= 12 ? 'PM' : 'AM';
+    final hh = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final mm = local.minute < 10 ? '0${local.minute}' : '${local.minute}';
+    return '$d $m, $hh:$mm $ap';
+  }
 }

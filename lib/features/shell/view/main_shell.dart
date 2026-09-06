@@ -187,7 +187,11 @@ class _AppDrawer extends StatelessWidget {
           // ── Footer ──────────────────────────────────────────────────────────
           Container(
             padding: EdgeInsets.fromLTRB(
-                20, 12, 20, 24 + MediaQuery.of(context).padding.bottom),
+              20,
+              12,
+              20,
+              24 + MediaQuery.of(context).padding.bottom,
+            ),
             decoration: const BoxDecoration(
               border: Border(top: BorderSide(color: AppColors.border)),
             ),
@@ -225,7 +229,11 @@ class _DrawerHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(
-          20, 56 + MediaQuery.of(context).padding.top, 20, 24),
+        20,
+        56 + MediaQuery.of(context).padding.top,
+        20,
+        24,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.only(
@@ -247,10 +255,7 @@ class _DrawerHeader extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 alignment: Alignment.center,
-                child: const Text(
-                  '⚽',
-                  style: TextStyle(fontSize: 18),
-                ),
+                child: const Text('⚽', style: TextStyle(fontSize: 18)),
               ),
               const SizedBox(width: 10),
               const Text(
@@ -266,62 +271,62 @@ class _DrawerHeader extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           // User avatar + info
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.lime,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3), width: 2),
-                ),
-                child: const Text(
-                  'JM',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'John Mwangi',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.lime.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Text(
-                        'Member',
-                        style: TextStyle(
-                          color: AppColors.lime,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     Container(
+          //       width: 48,
+          //       height: 48,
+          //       alignment: Alignment.center,
+          //       decoration: BoxDecoration(
+          //         color: AppColors.lime,
+          //         shape: BoxShape.circle,
+          //         border: Border.all(
+          //             color: Colors.white.withValues(alpha: 0.3), width: 2),
+          //       ),
+          //       child: const Text(
+          //         'JM',
+          //         style: TextStyle(
+          //           color: AppColors.primary,
+          //           fontWeight: FontWeight.w900,
+          //           fontSize: 16,
+          //         ),
+          //       ),
+          //     ),
+          //     const SizedBox(width: 12),
+          //     Expanded(
+          //       child: Column(
+          //         crossAxisAlignment: CrossAxisAlignment.start,
+          //         children: [
+          //           const Text(
+          //             'John Mwangi',
+          //             style: TextStyle(
+          //               color: Colors.white,
+          //               fontSize: 15,
+          //               fontWeight: FontWeight.w800,
+          //             ),
+          //           ),
+          //           const SizedBox(height: 2),
+          //           Container(
+          //             padding: const EdgeInsets.symmetric(
+          //                 horizontal: 8, vertical: 3),
+          //             decoration: BoxDecoration(
+          //               color: AppColors.lime.withValues(alpha: 0.2),
+          //               borderRadius: BorderRadius.circular(20),
+          //             ),
+          //             child: const Text(
+          //               'Member',
+          //               style: TextStyle(
+          //                 color: AppColors.lime,
+          //                 fontSize: 11,
+          //                 fontWeight: FontWeight.w700,
+          //               ),
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );
@@ -334,17 +339,17 @@ class _DrawerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10.5,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1,
-            color: AppColors.muted,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+    child: Text(
+      label,
+      style: const TextStyle(
+        fontSize: 10.5,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1,
+        color: AppColors.muted,
+      ),
+    ),
+  );
 }
 
 class _DrawerItem extends StatelessWidget {
@@ -389,8 +394,7 @@ class _DrawerItem extends StatelessWidget {
                     color: active ? AppColors.primary : AppColors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color:
-                          active ? AppColors.primary : AppColors.border,
+                      color: active ? AppColors.primary : AppColors.border,
                     ),
                   ),
                   child: Text(
@@ -406,10 +410,8 @@ class _DrawerItem extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 14.5,
-                    fontWeight:
-                        active ? FontWeight.w800 : FontWeight.w600,
-                    color:
-                        active ? AppColors.primary : AppColors.bodyText,
+                    fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                    color: active ? AppColors.primary : AppColors.bodyText,
                   ),
                 ),
                 if (active) ...[
@@ -442,11 +444,7 @@ class _BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
-    final labels = [
-      loc.navExplore,
-      loc.navBookings,
-      loc.navProfile,
-    ];
+    final labels = [loc.navExplore, loc.navBookings, loc.navProfile];
 
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 26),

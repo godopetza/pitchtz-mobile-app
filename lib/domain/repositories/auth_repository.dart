@@ -31,6 +31,17 @@ abstract class AuthRepository implements Listenable {
   /// profile via `GET /auth/me`.
   Future<UserProfile> adoptOAuthToken(String token);
 
+  /// Native flow: trades a provider-signed ID token (from the on-device
+  /// Google/Apple SDK) for a session via `POST /auth/{provider}/token`.
+  /// Throws [ApiException] with 404 while the backend lacks that endpoint —
+  /// callers then fall back to the browser redirect flow.
+  Future<UserProfile> signInWithIdToken({
+    required String provider,
+    required String idToken,
+    String? name,
+    String? email,
+  });
+
   /// Sliding refresh: `POST /auth/refresh` when the stored token is past
   /// half-life. Silently signs out if the token turns out to be invalid.
   Future<void> refreshIfNeeded();

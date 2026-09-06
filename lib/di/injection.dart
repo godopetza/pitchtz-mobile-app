@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/auth/social_auth_service.dart';
 import '../core/config/locale_controller.dart';
 import '../core/network/api_client.dart';
 import '../core/network/token_store.dart';
@@ -58,6 +59,7 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<LocaleController>(() => LocaleController(prefs));
   getIt.registerLazySingleton<TokenStore>(() => TokenStore(prefs));
   getIt.registerLazySingleton<ApiClient>(() => ApiClient(tokens: getIt()));
+  getIt.registerLazySingleton<SocialAuthService>(() => SocialAuthService());
 
   // ---- Repositories (data layer, singletons) ----
 
@@ -107,8 +109,8 @@ Future<void> configureDependencies() async {
 
   // ---- ViewModels (presentation layer) ----
   getIt.registerFactory(() => OnboardingViewModel());
-  getIt.registerFactory(() => LoginViewModel(getIt()));
-  getIt.registerFactory(() => ProfileViewModel(getIt()));
+  getIt.registerFactory(() => LoginViewModel(getIt(), getIt()));
+  getIt.registerFactory(() => ProfileViewModel(getIt(), getIt()));
   getIt.registerLazySingleton(() => ShellViewModel());
   getIt.registerFactory(() => ExploreViewModel(getIt(), getIt(), getIt()));
   getIt.registerFactory(() => ResultsViewModel(getIt()));

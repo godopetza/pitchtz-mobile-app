@@ -10,7 +10,6 @@ import '../../../l10n/gen/app_localizations.dart';
 import '../viewmodel/explore_viewmodel.dart';
 import '../widgets/explore_sheets.dart';
 import '../widgets/pitch_cards.dart';
-import 'explore_map_view.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -47,9 +46,6 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<ExploreViewModel>();
-    if (vm.homeView == HomeView.map) {
-      return Container(color: AppColors.cream, child: const ExploreMapView());
-    }
 
     return Stack(
       children: [
@@ -244,7 +240,7 @@ class _ExplorePageState extends State<ExplorePage> {
 
   Widget _mapPreview(BuildContext context, ExploreViewModel vm) {
     return GestureDetector(
-      onTap: vm.showMap,
+      onTap: () => Navigator.pushNamed(context, Routes.map, arguments: vm),
       child: Container(
         margin: const EdgeInsets.fromLTRB(20, 8, 20, 0),
         height: 74,
@@ -767,8 +763,9 @@ class _HomeSearchOverlay extends StatelessWidget {
                             onTap: () {
                               textCtrl.clear();
                               vm.selectSuggestion(s);
-                              vm.showMap();
                               onClose();
+                              Navigator.pushNamed(context, Routes.map,
+                                  arguments: vm);
                             },
                           ),
                         const SizedBox(height: 8),
@@ -786,8 +783,9 @@ class _HomeSearchOverlay extends StatelessWidget {
                             onTap: () {
                               textCtrl.clear();
                               vm.pickMapArea(a.name);
-                              vm.showMap();
                               onClose();
+                              Navigator.pushNamed(context, Routes.map,
+                                  arguments: vm);
                             },
                           ),
                         const SizedBox(height: 8),

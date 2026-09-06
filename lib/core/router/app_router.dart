@@ -10,7 +10,9 @@ import '../../features/booking/view/processing_page.dart';
 import '../../features/booking/view/scan_pay_page.dart';
 import '../../features/booking/view/success_page.dart';
 import '../../features/booking/view/summary_page.dart';
+import '../../features/explore/view/explore_map_view.dart';
 import '../../features/explore/view/results_page.dart';
+import '../../features/explore/viewmodel/explore_viewmodel.dart';
 import '../../features/explore/viewmodel/results_viewmodel.dart';
 import '../../features/fixtures/view/fixtures_page.dart';
 import '../../features/fixtures/viewmodel/fixtures_viewmodel.dart';
@@ -54,6 +56,20 @@ class AppRouter {
           create: (_) => getIt<ResultsViewModel>()..load(),
           child: const ResultsPage(),
         ));
+
+      case Routes.map:
+        // The explore tab passes its live viewmodel so the map opens with the
+        // venues already loaded; opened directly, it creates a fresh one.
+        final exploreVm = settings.arguments as ExploreViewModel?;
+        return _slide(exploreVm != null
+            ? ChangeNotifierProvider.value(
+                value: exploreVm,
+                child: const VenueMapPage(),
+              )
+            : ChangeNotifierProvider(
+                create: (_) => getIt<ExploreViewModel>()..load(),
+                child: const VenueMapPage(),
+              ));
 
       case Routes.detail:
         final pitchId = settings.arguments as String? ?? '';

@@ -41,6 +41,28 @@ class LoginPage extends StatelessWidget {
       getIt<ToastController>().show(loc.socialSignInMobileOnly);
       return;
     }
+
+    // 1 — Native first: the device's Google account picker / Apple Face ID
+    //     sheet, so users pick an account already on the phone.
+    try {
+      final native = await vm.signInWithProvider(provider);
+      switch (native.status) {
+        case NativeSignInStatus.success:
+          getIt<ToastController>().show(loc.signedInToast(native.user!.name));
+          if (context.mounted) _goHome(context);
+          return;
+        case NativeSignInStatus.cancelled:
+          return; // user dismissed the sheet — stay put, no fallback
+        case NativeSignInStatus.unavailable:
+          break; // fall through to the browser redirect flow
+      }
+    } on ApiException catch (e) {
+      getIt<ToastController>().show(e.userMessage);
+      return;
+    }
+
+    // 2 — Fallback: the `/auth/{provider}/start` redirect flow in a WebView.
+    if (!context.mounted) return;
     final token = await Navigator.push<String>(
       context,
       MaterialPageRoute(builder: (_) => OAuthPage(provider: provider)),

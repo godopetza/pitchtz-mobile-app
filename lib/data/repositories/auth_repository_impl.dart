@@ -56,6 +56,21 @@ class AuthRepositoryImpl extends ChangeNotifier implements AuthRepository {
   }
 
   @override
+  Future<UserProfile> signInWithIdToken({
+    required String provider,
+    required String idToken,
+    String? name,
+    String? email,
+  }) async {
+    final data = await _api.post('/auth/$provider/token', body: {
+      'id_token': idToken,
+      if (name != null && name.isNotEmpty) 'name': name,
+      if (email != null && email.isNotEmpty) 'email': email,
+    });
+    return _openFromGrant(data);
+  }
+
+  @override
   Future<UserProfile> adoptOAuthToken(String token) async {
     // The redirect fragment only carries the JWT; its `exp` claim is the
     // authoritative expiry (fall back to the documented 30 days).

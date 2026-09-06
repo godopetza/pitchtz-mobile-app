@@ -11,8 +11,6 @@ import '../../../domain/entities/pitch.dart';
 import '../../../domain/repositories/city_repository.dart';
 import '../../../domain/repositories/pitch_repository.dart';
 
-enum HomeView { list, map }
-
 enum ViewState { loading, ready, error }
 
 /// A Places API (New) autocomplete suggestion.
@@ -94,20 +92,6 @@ class ExploreViewModel extends ChangeNotifier {
       counts[v.area] = (counts[v.area] ?? 0) + 1;
     }
     return counts.entries.map((e) => Area(name: e.key, count: e.value)).toList();
-  }
-
-  // ---- Home view toggle ----
-  HomeView _homeView = HomeView.list;
-  HomeView get homeView => _homeView;
-  void showMap() {
-    _homeView = HomeView.map;
-    _mapSel = null;
-    notifyListeners();
-  }
-
-  void showList() {
-    _homeView = HomeView.list;
-    notifyListeners();
   }
 
   // ---- Filter chips ----
