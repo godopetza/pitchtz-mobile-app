@@ -4,6 +4,26 @@
 <dict>
 	<key>GMSApiKey</key>
 	<string>AIzaSyAz7McqqrKhEB-D4BPWEuQuXmLe4Zu6Llg</string>
+	<!-- Google Sign-In (native). GIDClientID is the iOS OAuth client from
+	     GoogleService-Info.plist; GIDServerClientID is the backend's web OAuth
+	     client, so minted ID tokens verify against the existing server config.
+	     The URL scheme below is the REVERSED form of GIDClientID — it lets the
+	     Google SDK bounce back into the app after consent. -->
+	<key>GIDClientID</key>
+	<string>774754517096-kj1c7aoumra7crrf3ql75l668bnga31c.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>774754517096-aooc2l4nnk4nqberbr50nl1amvj2rb0m.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.774754517096-kj1c7aoumra7crrf3ql75l668bnga31c</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>PitchTZ uses your location to show pitches near you</string>
 	<key>NSLocationAlwaysUsageDescription</key>

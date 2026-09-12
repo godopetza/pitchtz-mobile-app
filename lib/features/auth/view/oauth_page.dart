@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -28,10 +30,15 @@ class _OAuthPageState extends State<OAuthPage> {
   bool _done = false;
 
   // Google refuses OAuth from anything that self-identifies as a WebView
-  // (403 disallowed_useragent), so present a plain mobile-browser UA.
-  static const _userAgent =
-      'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 '
-      '(KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36';
+  // (403 disallowed_useragent), so present a plain mobile-browser UA — but
+  // one matching the real platform: Apple's sign-in page serves Android
+  // browsers a different flow, so an Android UA on an iPhone misbehaves.
+  static final _userAgent = defaultTargetPlatform == TargetPlatform.iOS
+      ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) '
+          'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 '
+          'Mobile/15E148 Safari/604.1'
+      : 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 '
+          '(KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36';
 
   @override
   void initState() {

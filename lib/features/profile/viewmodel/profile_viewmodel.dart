@@ -1,18 +1,20 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/auth/social_auth_service.dart';
 import '../../../domain/entities/api_booking.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/repositories/auth_repository.dart';
 import '../../../domain/repositories/booking_repository.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-  ProfileViewModel(this._auth, this._bookings) {
+  ProfileViewModel(this._auth, this._bookings, this._social) {
     _auth.addListener(_onAuthChanged);
     _bookings.addListener(_onBookingsChanged);
   }
 
   final AuthRepository _auth;
   final BookingRepository _bookings;
+  final SocialAuthService _social;
 
   bool _loading = false;
 
@@ -42,7 +44,12 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> signOut() => _auth.signOut();
+  Future<void> signOut() async {
+    await _auth.signOut();
+    // Explicit logout must also drop the plugin's cached Google session, or
+    // the login screen's silent sign-in would immediately reopen it.
+    await _social.signOutGoogle();
+  }
 
   void _onAuthChanged() => notifyListeners();
   void _onBookingsChanged() => notifyListeners();

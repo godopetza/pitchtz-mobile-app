@@ -16,4 +16,15 @@ class ApiConfig {
 
   /// The IANA timezone the availability endpoint expects for `date=YYYY-MM-DD`.
   static const String venueTimezone = 'Africa/Dar_es_Salaam';
+
+  /// Native Google/Apple sign-in exchanges a device-issued ID token via
+  /// `POST /auth/{provider}/token` — endpoints the backend hasn't shipped yet
+  /// (per docs/openapi.yaml only the `/auth/{provider}/start` redirect flow
+  /// exists). Left off, sign-in goes straight to the browser redirect flow
+  /// instead of prompting natively first and then asking the user to sign in
+  /// a second time after the exchange 404s. Flip on once the backend adds
+  /// the token endpoints:
+  ///   flutter run --dart-define=PITCHTZ_NATIVE_AUTH=true
+  static const bool nativeSocialAuth =
+      bool.fromEnvironment('PITCHTZ_NATIVE_AUTH');
 }

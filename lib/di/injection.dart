@@ -110,7 +110,7 @@ Future<void> configureDependencies() async {
   // ---- ViewModels (presentation layer) ----
   getIt.registerFactory(() => OnboardingViewModel());
   getIt.registerFactory(() => LoginViewModel(getIt(), getIt()));
-  getIt.registerFactory(() => ProfileViewModel(getIt(), getIt()));
+  getIt.registerFactory(() => ProfileViewModel(getIt(), getIt(), getIt()));
   getIt.registerLazySingleton(() => ShellViewModel());
   getIt.registerFactory(() => ExploreViewModel(getIt(), getIt(), getIt()));
   getIt.registerFactory(() => ResultsViewModel(getIt()));

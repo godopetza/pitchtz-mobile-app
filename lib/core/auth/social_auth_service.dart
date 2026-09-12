@@ -49,6 +49,43 @@ class SocialAuthService {
     _googleReady = true;
   }
 
+  /// Silent Google re-authentication — no typing, no full account picker.
+  ///
+  /// Uses `attemptLightweightAuthentication()`: on Android the Credential
+  /// Manager returns the previously used device account (at most a one-tap
+  /// "Continue as …" sheet); on iOS the SDK restores the prior sign-in with
+  /// no UI at all. Returns null when nothing can be restored without full
+  /// interaction — callers just show the normal login screen.
+  Future<SocialAuthResult?> googleSilent() async {
+    try {
+      await _initGoogle();
+      final account =
+          await GoogleSignIn.instance.attemptLightweightAuthentication();
+      final idToken = account?.authentication.idToken;
+      if (account == null || idToken == null || idToken.isEmpty) return null;
+      return SocialAuthResult(
+        idToken: idToken,
+        email: account.email,
+        name: account.displayName,
+      );
+    } catch (e) {
+      // Silent path is best-effort only — any failure means "not restored".
+      debugPrint('Silent Google sign-in skipped: $e');
+      return null;
+    }
+  }
+
+  /// Drops the plugin's cached Google session so an explicit app logout
+  /// doesn't get silently signed straight back in by [googleSilent].
+  Future<void> signOutGoogle() async {
+    try {
+      await _initGoogle();
+      await GoogleSignIn.instance.signOut();
+    } catch (e) {
+      debugPrint('Google sign-out skipped: $e');
+    }
+  }
+
   /// Native Google sign-in → verified ID token.
   Future<SocialAuthResult> google() async {
     try {

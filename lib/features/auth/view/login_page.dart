@@ -14,8 +14,32 @@ import '../../../l10n/gen/app_localizations.dart';
 import '../viewmodel/login_viewmodel.dart';
 import 'oauth_page.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Returning users: restore the Google account already signed in on this
+    // device and open a session without any typing. Quietly does nothing
+    // when there is no restorable account.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trySilentSignIn());
+  }
+
+  Future<void> _trySilentSignIn() async {
+    if (!mounted) return;
+    final vm = context.read<LoginViewModel>();
+    final loc = AppLocalizations.of(context);
+    final user = await vm.trySilentSignIn();
+    if (user == null || !mounted) return;
+    getIt<ToastController>().show(loc.signedInToast(user.name));
+    _goHome(context);
+  }
 
   void _goHome(BuildContext context) =>
       Navigator.pushNamedAndRemoveUntil(context, Routes.home, (_) => false);

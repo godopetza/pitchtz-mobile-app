@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/auth/social_auth_service.dart';
+import '../../../core/network/api_config.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../domain/entities/user_profile.dart';
 import '../../../domain/repositories/auth_repository.dart';
@@ -90,6 +91,28 @@ class LoginViewModel extends ChangeNotifier {
   Future<UserProfile> adoptToken(String token) =>
       _run(() => _auth.adoptOAuthToken(token));
 
+  /// Silent sign-in for returning users: restores the Google account already
+  /// signed in on this device (no picker, no typing) and trades its ID token
+  /// for a session. Returns null — quietly — whenever that isn't possible;
+  /// the login screen then just behaves as usual.
+  Future<UserProfile?> trySilentSignIn() async {
+    if (!ApiConfig.nativeSocialAuth) return null;
+    final social = await _social.googleSilent();
+    if (social == null) return null;
+    try {
+      return await _run(() => _auth.signInWithIdToken(
+            provider: 'google',
+            idToken: social.idToken,
+            name: social.name,
+            email: social.email,
+          ));
+    } on ApiException {
+      // Backend missing /auth/google/token, expired token, offline — the
+      // user can still sign in normally, so never surface this.
+      return null;
+    }
+  }
+
   /// Native social sign-in: shows the device's Google account picker or the
   /// Apple Face ID sheet, then trades the provider's ID token for a session.
   ///
@@ -97,6 +120,11 @@ class LoginViewModel extends ChangeNotifier {
   /// path is missing so the view can fall back to the browser redirect flow.
   /// Real API errors (bad token, server down) still throw [ApiException].
   Future<NativeSignInResult> signInWithProvider(String provider) async {
+    // Don't prompt natively (Face ID / account picker) when the backend can't
+    // redeem the resulting token — the user would have to sign in twice.
+    if (!ApiConfig.nativeSocialAuth) {
+      return const NativeSignInResult(NativeSignInStatus.unavailable);
+    }
     final SocialAuthResult social;
     try {
       social = provider == 'apple' ? await _social.apple() : await _social.google();
